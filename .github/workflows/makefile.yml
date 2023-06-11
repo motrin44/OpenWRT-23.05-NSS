@@ -1,0 +1,34 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "openwrt-23.05-nss-qsdk11" ]
+  pull_request:
+    branches: [ "openwrt-23.05-nss-qsdk11" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: configure
+      run: ./scripts/feeds update -a && ./scripts/feeds install -a && cp diffconfig .config && make defconfig && ./scripts/getver.sh
+
+    - name: Install dependencies
+      run: make V=s
+
+    - name: Upload directories
+      uses: actions/upload-artifact@main
+      with:
+        name: build_upload
+        path: |
+          bin
+
+    - name: Run check
+      run: make check
+
+#    - name: Run distcheck
+#      run: make distcheck
